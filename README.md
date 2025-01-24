@@ -2,51 +2,98 @@
 
 - Author: Nataniel Martins de oliveira
 
-## Descrição do Projeto
+### 1. Clone o Repositório
 
-### Backend (API Laravel):
+```bash
+# Substitua <seu-repositorio> pela URL do seu repositório
+git clone git@github.com:natanielmartinsoliveira/teste-dev-php-nataniel.git
+cd teste-dev-php-nataniel
+```
 
-#### CRUD de Fornecedores:
-- **Criar Fornecedor:**
-  - Permita o cadastro de fornecedores usando CNPJ ou CPF, incluindo informações como nome/nome da empresa, contato, endereço, etc.
-  - Valide a integridade e o formato dos dados, como o formato correto de CNPJ/CPF e a obrigatoriedade de campos.
+### 1. Build os contêineres 
 
-- **Editar Fornecedor:**
-  - Facilite a atualização das informações de fornecedores, mantendo a validação dos dados.
+```bash
+docker-compose build
+```
 
-- **Excluir Fornecedor:**
-  - Possibilite a remoção segura de fornecedores.
+### 2. Suba os contêineres
 
-- **Listar Fornecedores:**
-  - Apresente uma lista paginada de fornecedores, com filtragem e ordenação.
-
-#### Migrations:
-- Utilize migrations do Laravel para definir a estrutura do banco de dados, garantindo uma boa organização e facilidade de manutenção.
-
-## Requisitos
-
-### Backend:
-- Implementar busca por CNPJ na [BrasilAPI](https://brasilapi.com.br/docs#tag/CNPJ/paths/~1cnpj~1v1~1{cnpj}/get) ou qualquer outro endpoint público.
-
-## Tecnologias a serem utilizadas
-- Framework Laravel (PHP) 9.x ou superior
-- MySQL ou Postgres
-
-## Critérios de Avaliação
-- Adesão aos requisitos funcionais e técnicos.
-- Qualidade do código, incluindo organização, padrões de desenvolvimento e segurança.
-- Documentação do projeto, incluindo um README detalhado com instruções de instalação e operação.
-
-## Bônus
-- Implementação de Repository Pattern.
-- Implementação de testes automatizados.
-- Dockerização do ambiente de desenvolvimento.
-- Implementação de cache para otimizar o desempenho.
-
-## Entrega
-- Para iniciar o teste, faça um fork deste repositório; Se você apenas clonar o repositório não vai conseguir fazer push.
-- Crie uma branch com o nome que desejar;
-- Altere o arquivo README.md com as informações necessárias para executar o seu teste (comandos, migrations, seeds, etc);
-- Depois de finalizado, envie-nos o pull request;
+```bash
+docker-compose up -d
+```
 
 
+### 3. Configuração do Laravel
+
+1. Copie o arquivo de exemplo `.env.example` para `.env`:
+
+```bash
+cp .env.example .env
+```
+
+2. Atualize as variáveis de ambiente no arquivo `.env` para refletir a configuração do banco de dados do Docker:
+
+```env
+DB_CONNECTION=mysql
+DB_HOST=db
+DB_PORT=3306
+DB_DATABASE=test_db
+DB_USERNAME=devuser
+DB_PASSWORD=devpass
+```
+
+### 4. execute o comando 
+
+```bash
+docker exec -it <mycontainer> bash
+```
+
+1. agora dentro do terminal vamos executar alguns comandos para o funcionamento do laravel
+
+```bash
+chmod -R 777 /var/www/projects/example-app/storage/.
+```
+
+```bash
+cd /var/www/projects/example-app/ && composer dump-autoload -o
+```
+
+Caso tenha algun problema com o processo anterior execute o comando abaixo
+```bash
+composer update --no-scripts
+```
+
+Prossiga com os comandos para terminar
+
+```bash
+php artisan migrate
+```
+
+```bash
+php artisan key:generate
+```
+
+```bash
+php artisan config:cache
+```
+
+## Comandos Úteis
+
+- **Parar os contêineres:**
+  ```bash
+  docker-compose down
+  ```
+
+- **Acessar o contêiner do PHP:**
+  ```bash
+  docker-compose exec app bash
+  ```
+
+- **Limpar cache do Laravel:**
+  ```bash
+  docker-compose run --rm app php artisan cache:clear
+  ```
+
+## Licença
+
+Este projeto está licenciado sob a [MIT License](LICENSE).
