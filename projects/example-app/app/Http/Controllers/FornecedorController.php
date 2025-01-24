@@ -6,73 +6,115 @@ use Illuminate\Http\Request;
 use App\Http\Resources\Fornecedor as FornecedorResource;
 use App\Http\Services\FornecedorService;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Adapters\CnpjValidatorAdapter;
+use Illuminate\Support\Facades\Cache;
+use App\Http\Requests\FornecedorRequest;
 
 class FornecedorController extends Controller
 {
-    private $service;
+    private $fornecedorService;
+    private $cnpjValidator;
 
-    public function __construct(FornecedorService $service)
+    public function __construct(FornecedorService $fornecedorService, CnpjValidatorAdapter $cnpjValidator)
     {
-        $this->service = $service;
+        $this->fornecedorService = $fornecedorService;
+        $this->cnpjValidator = $cnpjValidator;
     }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $fornecedor = $this->service->listAll();
-        return FornecedorResource::collection($fornecedor);
+        $filters = $request->only(['nome', 'cnpj', 'cpf']);
+        $key = 'fornecedores:' . http_build_query($filters) . ':page:' . $request->get('page', 1);
+        if($request->get('nocache') == 'true'){
+            Cache::forget($key);
+        }
+        $fornecedores = Cache::remember($key, 3600, function () use ($filters) {
+            return $this->fornecedorService->getAllWithFilters($filters);
+        });
+
+        return FornecedorResource::collection($fornecedores);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(FornecedorRequest $request)
     {
-        $data =  $request->all();
-        $validator = Validator::make($data, [
-            'nome' => 'required|string|max:255',
-            'documento' => 'required|string|unique:fornecedores|regex:/^(\d{11}|\d{14})$/',
-            'contato' => 'nullable|string|max:255',
-            'endereco' => 'nullable|string|max:255',
-        ]);
-        if($validator->fails()) return response()->json(array(
-            'code'      =>  401,
-            'message'   =>  'Error'
-        ), 401); 
-        $fornecedor = $this->service->store($request);
-        return new FornecedorResource($fornecedor);
+        
+        $validatedData = $this->validateRequest($request);
 
+        if (!empty($validatedData['cnpj'])) {
+            $cnpjData = $this->cnpjValidator->validate($validatedData['cnpj']);
+            if (!$cnpjData) {
+                return response()->json(['message' => 'CNPJ inválido ou não encontrado na base externa.'], 400);
+            }
+
+            // Mesclando os dados da API com os do usuário
+            $validatedData = array_merge($validatedData, [
+                'nome' => $validatedData['nome'] ?? $cnpjData['razao_social'],
+                'cep' => $validatedData['cep'] ?? $cnpjData['cep'],
+                'logradouro' => $validatedData['logradouro'] ?? $cnpjData['logradouro'],
+                'bairro' => $validatedData['bairro'] ?? $cnpjData['bairro'],
+                'municipio' => $validatedData['municipio'] ?? $cnpjData['municipio'],
+                'uf' => $validatedData['uf'] ?? $cnpjData['uf'],
+                'numero' => $validatedData['numero'] ?? $cnpjData['numero'],
+                'complemento' => $validatedData['complemento'] ?? $cnpjData['complemento'], 
+                'contato' => $validatedData['contato'] ?? $cnpjData['ddd_telefone_1'],
+            ]);
+        }
+
+        $fornecedor = $this->fornecedorService->create($validatedData);
+
+        return new FornecedorResource($fornecedor);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        $fornecedor = $this->service->find($id);
-        return new FornecedorResource( $fornecedor );
+        $fornecedor = $this->fornecedorService->findById($id);
+        if (!$fornecedor) {
+            return response()->json(['message' => 'Fornecedor não encontrado'], 404);
+        }
+
+        return new FornecedorResource($fornecedor);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+
+    public function update(FornecedorRequest $request, $id)
     {
- 
-        $data =  $request->all();
-        $validator = Validator::make($data, [
-            'nome' => 'required|string|max:255',
-            'documento' => 'required|string|unique:fornecedores|regex:/^(\d{11}|\d{14})$/',
-            'contato' => 'nullable|string|max:255',
-            'endereco' => 'nullable|string|max:255',
-        ]);
-        if($validator->fails()) return response()->json(array(
-            'code'      =>  401,
-            'message'   =>  'Error'
-        ), 401); 
-        $fornecedor = $this->service->update($request, $id);
-        return new FornecedorResource( $fornecedor );
+        
+        $validatedData = $this->validateRequest($request, $id);
+
+        if (!empty($validatedData['cnpj'])) {
+            $cnpjData = $this->cnpjValidator->validate($validatedData['cnpj']);
+            if (!$cnpjData) {
+                return response()->json(['message' => 'CNPJ inválido ou não encontrado na base externa.'], 400);
+            }
+            
+            // Mesclando os dados da API com os do usuário
+            $validatedData = array_merge($validatedData, [
+                'nome' => $validatedData['nome'] ?? $cnpjData['razao_social'],
+                'cep' => $validatedData['cep'] ?? $cnpjData['cep'],
+                'logradouro' => $validatedData['logradouro'] ?? $cnpjData['logradouro'],
+                'bairro' => $validatedData['bairro'] ?? $cnpjData['bairro'],
+                'municipio' => $validatedData['municipio'] ?? $cnpjData['municipio'],
+                'uf' => $validatedData['uf'] ?? $cnpjData['uf'],
+                'numero' => $validatedData['numero'] ?? $cnpjData['numero'],
+                'complemento' => $validatedData['complemento'] ?? $cnpjData['complemento'], 
+                'contato' => $validatedData['contato'] ?? $cnpjData['ddd_telefone_1'],
+            ]);
+        }
+
+        $fornecedor = $this->fornecedorService->update($id, $validatedData);
+
+        return new FornecedorResource($fornecedor);
     }
 
     /**
@@ -80,10 +122,44 @@ class FornecedorController extends Controller
      */
     public function destroy(string $id)
     {
-        $fornecedor = $this->service->delete($id);
-        if( !$fornecedor ){
-            return new FornecedorResource( $fornecedor );
+        $fornecedor = $this->fornecedorService->delete($id);
+        return response()->json(['message' => 'Fornecedor removido com sucesso.']);
+    }
+
+    private function validateRequest($request, $id = null)
+    {
+
+        $request->merge([
+            'cpf' => $request->cpf ? preg_replace('/\D/', '', $request->cpf) : null,
+            'cnpj' => $request->cnpj ? preg_replace('/\D/', '', $request->cnpj) : null,
+        ]);
+
+
+        $rules = [
+            'nome' => 'required|string|max:255',
+            'cnpj' => 'nullable|digits:14|unique:fornecedores,cnpj' . ($id ? "," . $id : ""),
+            'cpf' => 'nullable|digits:11|unique:fornecedores,cpf' . ($id ? "," . $id : ""),
+            'contato' => 'string',
+            'logradouro' => 'string',
+            'bairro' => 'string',
+            'municipio' => 'string',
+            'numero' => 'string',
+            'complemento' => 'string',
+            'uf	' => 'string',
+            'cep' => 'string'
+        ];
+
+        $validatedData = $request->validate($rules);
+
+        if (!empty($validatedData['cpf'])) {
+            $validatedData['cpf'] = preg_replace('/\D/', '', $validatedData['cpf']);
         }
+
+        if (empty($validatedData['cnpj']) && empty($validatedData['cpf'])) {
+            throw new \Illuminate\Validation\ValidationException(validator: null, response: response()->json(['message' => 'É obrigatório informar pelo menos um dos campos: CNPJ ou CPF.'], 400));
+        }
+
+        return $validatedData;
     }
 
     

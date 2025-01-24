@@ -17,6 +17,10 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(FornecedorServiceInterface::class, FornecedorService::class);
         $this->app->bind(FornecedorRepositoryInterface::class, FornecedorRepository::class);
+        $this->app->bind(CnpjValidatorAdapter::class, function () {
+            return new CnpjValidatorAdapter();
+        });
+        
     }
 
     /**

@@ -11,7 +11,7 @@ class FornecedorRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,9 +23,17 @@ class FornecedorRequest extends FormRequest
     {        
         return [
             'nome' => ['required', 'max:255'],
-            'documento' => ['required', 'regex:/^(\d{11}|\d{14})$/' ],
-            'descricao' => ['nullable', 'max:255'],
-            'endereco' => ['nullable', 'max:255']
+            'cpf' => ['max:11'],
+            'cnpj' => ['max:14'],
+            'contato' => ['max:255'],
+            'logradouro' => [ 'max:255'],
+            'bairro' => [ 'max:255'],
+            'municipio' => [ 'max:255'],
+            'numero' => [ 'max:255'],
+            'complemento' => ['max:255'],
+            'uf' => [ 'max:255'],
+            'cep' => [ 'max:255'],
+            
         ];
     }
 

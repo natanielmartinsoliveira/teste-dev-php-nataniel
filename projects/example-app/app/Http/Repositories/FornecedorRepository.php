@@ -28,32 +28,45 @@ class FornecedorRepository
         return $this->fornecedor->find($id);
     }
 
+    public function getAllWithFilters(array $filters)
+    {
+        $query = $this->fornecedor->query();
+
+        if (!empty($filters['nome'])) {
+            $query->where('nome', 'like', '%' . $filters['nome'] . '%');
+        }
+
+        if (!empty($filters['cnpj'])) {
+            $query->where('cnpj', $filters['cnpj']);
+        }
+
+        if (!empty($filters['cpf'])) {
+            $query->where('cpf', $filters['cpf']);
+        }
+
+        return $query->paginate(10);
+    }
+
     public function search(string $search)
     {
         return $this->fornecedor->search($search);
     }
 
-    public function listAll()
+    public function findById($id)
     {
-        return $this->fornecedor->paginate(10);
+        return $this->fornecedor->find($id);
     }
 
-    public function store(Request $request): Fornecedor
+    public function create(array $data)
     {
-        $data = $request->all();
-        $data['validade'] = Carbon::parse($data['validade']);
-        $model = $this->fornecedor->create($data);
-        $model->save();
-        return $model;
+        return $this->fornecedor->create($data);
     }
 
-    public function update(Request $request, int $id) : Fornecedor
+    public function update($id, array $data)
     {
-        $fornecedor = $this->fornecedor->findOrFail( $id );
-        $data = $request->all();
-        $data['validade'] = Carbon::parse($data['validade']);
-        $fornecedor->update( $data );
-        $fornecedor->save();
+        $fornecedor = $this->fornecedor->findOrFail($id);
+        $fornecedor->update($data);
+
         return $fornecedor;
     }
 
@@ -62,6 +75,8 @@ class FornecedorRepository
         $fornecedor = $this->fornecedor->findOrFail( $id );
         return $fornecedor->delete();
     }
+    
+
     
   
 }

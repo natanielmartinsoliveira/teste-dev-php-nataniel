@@ -18,9 +18,19 @@ class Fornecedor extends JsonResource
         return [
             'id' => $this->id,
             'nome' => $this->nome,
-            'documento' => $this->documento,
+            'cpf' => $this->cpf,
+            'cnpj' => $this->cnpj,
             'contato' => $this->contato,
-            'endereco' => $this->endereco,
+            'logradouro' => $this->logradouro,
+            'bairro' => $this->bairro,
+            'municipio' => $this->municipio,
+            'numero' => $this->numero,
+            'complemento' => $this->complemento,
+            'uf' => $this->uf,
+            'cep' => $this->cep,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at
+            
         ];
     }
 

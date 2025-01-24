@@ -8,52 +8,36 @@ use Illuminate\Http\Request;
 
 class FornecedorService implements FornecedorServiceInterface
 {
-    /**
-     * @var $postRepositories
-     */
-    protected $postRepositories;
+    private $fornecedorRepository;
 
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function __construct(FornecedorRepository $postRepositories)
+    public function __construct(FornecedorRepository $fornecedorRepository)
     {
-        $this->postRepositories = $postRepositories;
+        $this->fornecedorRepository = $fornecedorRepository;
     }
 
-    public function find(int $id)
+    public function getAllWithFilters(array $filters)
     {
-        return $this->postRepositories->find($id);
+        return $this->fornecedorRepository->getAllWithFilters($filters);
     }
 
-    public function search(string $search)
+    public function create(array $data) : Fornecedor
     {
-        return $this->postRepositories->search($search);
+        return $this->fornecedorRepository->create($data);
     }
 
-    public function listAll()
+    public function findById($id) 
     {
-        return $this->postRepositories->listAll();
+        return $this->fornecedorRepository->findById($id);
     }
 
-    public function store(Request $request): Fornecedor
+    public function update($id, array $data) : Fornecedor
     {
-        return $this->postRepositories->store($request);
+        return $this->fornecedorRepository->update($id, $data);
     }
 
-    public function update(Request $request,int $id) : Fornecedor 
+    public function delete($id)
     {
-        return $this->postRepositories->update( $request, $id );
-    }
-
-    public function delete(int $id) 
-    {
-        return $this->postRepositories->delete($id);
-    }
-
-    public function upload(Request $request)
-    {
-        return $this->postRepositories->upload($request);
+        $this->fornecedorRepository->delete($id);
     }
 
   

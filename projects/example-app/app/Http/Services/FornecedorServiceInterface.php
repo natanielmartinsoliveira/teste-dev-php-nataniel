@@ -11,18 +11,16 @@ Interface FornecedorServiceInterface
 
     public function __construct(FornecedorRepository $postRepositories);
 
-    public function find(int $id);
+    public function getAllWithFilters(array $filters);
 
-    public function search(string $search);
+    public function create(array $data) : Fornecedor;
 
-    public function listAll();
+    public function findById($id) ;
 
-    public function store(Request $fornecedor): Fornecedor;
+    public function update($id, array $data) : Fornecedor;
 
-    public function update(Request $fornecedor, int $id) : Fornecedor;
+    public function delete(int $id);
 
-    public function delete(int $id) ;
-
-    public function upload(Request $request) ;
+    
   
 }

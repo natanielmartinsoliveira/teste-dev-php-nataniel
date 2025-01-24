@@ -9,19 +9,22 @@ class Fornecedor extends Model
 {
     use HasFactory;
 
+    protected $table = 'fornecedores';
+
     protected $fillable = [
         'nome',
-        'documento',
+        'cnpj',
+        'cpf',
+        'endereco',
         'contato',
-        'endereco'
+        'logradouro',
+        'bairro',
+        'municipio',
+        'numero',
+        'complemento',
+        'uf',
+        'cep'
     ];
 
-    public static function search($search)
-    {
-        return empty($search) ? static::query()
-            : static::query()->where('id', 'like', '%'.$search.'%')
-                ->orWhereRaw('LOWER(nome) COLLATE utf8mb4_unicode_ci LIKE ?', '%'.mb_strtolower($search).'%')
-                ->orWhereRaw('LOWER(descricao) COLLATE utf8mb4_unicode_ci LIKE ?', '%'.mb_strtolower($search).'%');
-        ;
-    }
+    
 }
