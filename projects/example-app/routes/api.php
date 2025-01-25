@@ -26,19 +26,19 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 // List Fornecedor
-Route::get('fornecedor', [FornecedorController::class, 'index']);
+Route::get('/fornecedor', [FornecedorController::class, 'index']);
 
 // List single fornecedor
-Route::get('fornecedor/{id}', [FornecedorController::class, 'show']);
+Route::get('/fornecedor/{id}', [FornecedorController::class, 'show']);
 
 // Create new fornecedor
-Route::middleware('auth:sanctum')->post('fornecedor', [FornecedorController::class, 'store']);
+Route::middleware('auth:sanctum')->post('/fornecedor', [FornecedorController::class, 'store']);
 
 // Update fornecedor
-Route::middleware('auth:sanctum')->put('fornecedor/{id}', [FornecedorController::class, 'update']);
+Route::middleware('auth:sanctum')->put('/fornecedor/{id}', [FornecedorController::class, 'update']);
 
 // Delete fornecedor
-Route::middleware('auth:sanctum')->delete('fornecedor/{id}', [FornecedorController::class,'destroy']);
+Route::middleware('auth:sanctum')->delete('/fornecedor/{id}', [FornecedorController::class,'destroy']);
 
 
 
