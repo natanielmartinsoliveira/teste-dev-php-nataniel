@@ -76,6 +76,10 @@ php artisan key:generate
 ```bash
 php artisan config:cache
 ```
+## EXTRA
+
+- **Segue arquivo de importação para teste da api no Insomnia:**
+- Insomnia_2025-01-24.json
 
 ## Comandos Úteis
 
